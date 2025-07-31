@@ -7,8 +7,6 @@ import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
 import io
-
-# Page configuration
 st.set_page_config(
     page_title="⚡ Battery Dashboard",
     page_icon="🔋",
@@ -16,7 +14,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for styling
 st.markdown("""
 <style>
     .main > div {
@@ -93,7 +90,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state
 if 'cells_data' not in st.session_state:
     st.session_state.cells_data = {}
 if 'num_cells' not in st.session_state:
@@ -180,7 +176,7 @@ def create_battery_overview_chart(cells_data):
     if not cells_data:
         return None, None
     
-    # Prepare data
+  
     cell_names = list(cells_data.keys())
     voltages = [data['voltage'] for data in cells_data.values()]
     currents = [data['current'] for data in cells_data.values()]
@@ -188,7 +184,7 @@ def create_battery_overview_chart(cells_data):
     capacities = [data['capacity'] for data in cells_data.values()]
     modes = [data['mode'] for data in cells_data.values()]
     
-    # Create subplots
+  
     fig = make_subplots(
         rows=2, cols=2,
         subplot_titles=('Voltage Distribution', 'Current vs Capacity', 
@@ -197,7 +193,7 @@ def create_battery_overview_chart(cells_data):
                [{"secondary_y": False}, {"type": "pie"}]]
     )
     
-    # Voltage bar chart
+    
     colors = [get_voltage_color(v, cells_data[name]['minVoltage'], cells_data[name]['maxVoltage']) 
               for v, name in zip(voltages, cell_names)]
     
@@ -206,7 +202,7 @@ def create_battery_overview_chart(cells_data):
         row=1, col=1
     )
     
-    # Current vs Capacity scatter
+  
     mode_colors = {'charging': '#10b981', 'discharging': '#ef4444', 'idle': '#6b7280'}
     scatter_colors = [mode_colors.get(mode, '#3b82f6') for mode in modes]
     
@@ -216,13 +212,13 @@ def create_battery_overview_chart(cells_data):
         row=1, col=2
     )
     
-    # Temperature histogram
+ 
     fig.add_trace(
         go.Histogram(x=temperatures, name="Temperature", marker_color='#f59e0b', nbinsx=10),
         row=2, col=1
     )
     
-    # Mode pie chart
+   
     mode_counts = pd.Series(modes).value_counts()
     fig.add_trace(
         go.Pie(labels=mode_counts.index, values=mode_counts.values, name="Modes",
@@ -239,15 +235,15 @@ def create_battery_overview_chart(cells_data):
     
     return fig
 
-# Header
+
 st.markdown('<h1 class="header-gradient">⚡ Battery Dashboard</h1>', unsafe_allow_html=True)
 st.markdown('<p style="text-align: center; font-size: 1.2rem; color: #64748b;">Advanced Battery Cell Monitoring & Control System</p>', unsafe_allow_html=True)
 
-# Sidebar controls
+
 with st.sidebar:
     st.header("🔧 Control Panel")
     
-    # Number of cells
+    
     num_cells = st.number_input(
         "🔋 Number of Cells", 
         min_value=1, 
@@ -257,7 +253,7 @@ with st.sidebar:
     )
     st.session_state.num_cells = num_cells
     
-    # Auto-update toggle
+   
     auto_update = st.checkbox(
         "🔄 Auto Update", 
         value=st.session_state.auto_update,
@@ -265,7 +261,7 @@ with st.sidebar:
     )
     st.session_state.auto_update = auto_update
     
-    # Update interval for auto-update
+    
     if auto_update:
         update_interval = st.slider(
             "Update Interval (seconds)", 
@@ -276,7 +272,7 @@ with st.sidebar:
     
     st.divider()
     
-    # Global actions
+
     if st.button("🔄 Reset All Cells", use_container_width=True):
         st.session_state.cells_data = {}
         st.session_state.voltage_animations = {}
@@ -320,7 +316,7 @@ with st.sidebar:
         st.success(f"Generated data for {num_cells} cells!")
         st.rerun()
 
-# Main content area
+
 col1, col2 = st.columns([2, 1])
 
 with col1:
@@ -337,7 +333,7 @@ with col1:
             with cols[idx]:
                 cell_key = f"cell_{cell_num}"
                 
-                # Initialize cell config if not exists
+              
                 if cell_key not in st.session_state:
                     st.session_state[cell_key] = {
                         'type': 'lfp',
@@ -345,10 +341,10 @@ with col1:
                         'mode': 'charging'
                     }
                 
-                # Get current config
+            
                 cell_config = st.session_state[cell_key]
                 
-                # Determine card style based on mode
+ 
                 mode = cell_config.get('mode', 'charging')
                 if mode == 'charging':
                     card_class = "charging-card"
@@ -363,7 +359,7 @@ with col1:
                 st.markdown(f'<div class="{card_class}">', unsafe_allow_html=True)
                 st.markdown(f"### {mode_icon} Cell {cell_num}")
                 
-                # Cell type selection
+               
                 cell_type = st.selectbox(
                     "Type",
                     options=['lfp', 'nmc'],
@@ -372,7 +368,7 @@ with col1:
                     format_func=lambda x: f"🔋 {x.upper()}"
                 )
                 
-                # Current input (disabled for idle mode)
+         
                 current_disabled = (mode == 'idle')
                 current_value = 0.0 if current_disabled else cell_config.get('current', 1.5)
                 
@@ -387,7 +383,7 @@ with col1:
                     help="Current is automatically set to 0 in idle mode"
                 )
                 
-                # Mode selection
+             
                 mode = st.selectbox(
                     "Mode",
                     options=['charging', 'discharging', 'idle'],
@@ -398,14 +394,14 @@ with col1:
                                        else f"⏸️ {x.title()}"
                 )
                 
-                # Update session state
+            
                 st.session_state[cell_key] = {
                     'type': cell_type,
                     'current': current,
                     'mode': mode
                 }
                 
-                # Display current voltage if available
+              
                 if cell_key in st.session_state.voltage_animations:
                     voltage = st.session_state.voltage_animations[cell_key]
                     max_voltage = 3.6 if cell_type == 'lfp' else 4.0
@@ -415,7 +411,7 @@ with col1:
                     st.markdown(f'<p class="{voltage_class}">Current Voltage: {voltage}V</p>', 
                               unsafe_allow_html=True)
                     
-                    # Progress bar for voltage
+                  
                     progress = (voltage - min_voltage) / (max_voltage - min_voltage)
                     st.progress(max(0, min(1, progress)))
                 
@@ -440,7 +436,6 @@ with col2:
         st.metric("Total Current", f"{total_current:.2f} A",
                  help="Sum of all cell currents")
         
-        # Mode distribution
         modes = [data['mode'] for data in st.session_state.cells_data.values()]
         mode_counts = pd.Series(modes).value_counts()
         
@@ -451,11 +446,11 @@ with col2:
     else:
         st.info("Generate data to see system metrics")
 
-# Auto-update functionality
+
 if auto_update and st.session_state.cells_data:
     time.sleep(update_interval)
     
-    # Update voltages for all cells
+
     updated = False
     for cell_name, data in st.session_state.cells_data.items():
         cell_type = 'lfp' if 'lfp' in cell_name else 'nmc'
@@ -467,7 +462,7 @@ if auto_update and st.session_state.cells_data:
             st.session_state.cells_data[cell_name]['voltage'] = new_voltage
             st.session_state.voltage_animations[f"cell_{cell_name.split('_')[1]}"] = new_voltage
             
-            # Update capacity
+           
             current = data['current']
             capacity = round(new_voltage * current, 2) if mode != 'idle' else 0.0
             st.session_state.cells_data[cell_name]['capacity'] = capacity
@@ -476,11 +471,11 @@ if auto_update and st.session_state.cells_data:
     if updated:
         st.rerun()
 
-# Data table section
+
 if st.session_state.cells_data:
     st.header("📈 Battery Data Overview")
     
-    # Create DataFrame
+    
     df_data = []
     for cell_name, data in st.session_state.cells_data.items():
         df_data.append({
@@ -497,7 +492,7 @@ if st.session_state.cells_data:
     
     df = pd.DataFrame(df_data)
     
-    # Display table with styling
+    
     st.dataframe(
         df,
         use_container_width=True,
@@ -526,15 +521,15 @@ if st.session_state.cells_data:
         }
     )
     
-    # Visualization section
+  
     st.header("📊 Data Visualization")
     
-    # Create overview charts
+    
     overview_fig = create_battery_overview_chart(st.session_state.cells_data)
     if overview_fig:
         st.plotly_chart(overview_fig, use_container_width=True)
     
-    # Individual voltage gauges
+   
     st.subheader("⚡ Individual Cell Voltages")
     gauge_cols = st.columns(min(3, len(st.session_state.cells_data)))
     
@@ -549,10 +544,10 @@ if st.session_state.cells_data:
             )
             st.plotly_chart(gauge_fig, use_container_width=True)
     
-    # Download CSV functionality
+  
     st.header("💾 Export Data")
     
-    # Create CSV
+
     csv_buffer = io.StringIO()
     df.to_csv(csv_buffer, index=False)
     csv_data = csv_buffer.getvalue()
@@ -570,7 +565,7 @@ if st.session_state.cells_data:
 else:
     st.info("👆 Configure your battery cells and click 'Generate Data' to start monitoring!")
 
-# Footer
+
 st.markdown("---")
 st.markdown(
     '<p style="text-align: center; color: #64748b;">⚡ Battery Dashboard - Advanced Monitoring System</p>',
