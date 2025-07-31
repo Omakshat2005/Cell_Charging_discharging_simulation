@@ -3,9 +3,6 @@ import pandas as pd
 import numpy as np
 import random
 import time
-import plotly.graph_objects as go
-import plotly.express as px
-from plotly.subplots import make_subplots
 import io
 st.set_page_config(
     page_title="⚡ Battery Dashboard",
